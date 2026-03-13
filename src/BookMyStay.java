@@ -2,15 +2,18 @@ import java.util.*;
 
 /**
  * Book My Stay App
- * Use Case 7: Add-On Service Selection
+ * Use Case 8: Booking History & Reporting
  *
- * Demonstrates attaching optional services to reservations
- * without modifying core booking or inventory logic.
+ * Demonstrates storing confirmed reservations and generating
+ * reports from booking history.
  *
  * @author Devanshi
- * @version 7.1
+ * @version 8.0
  */
 
+/**
+ * Reservation class
+ */
 class Reservation {
 
     private String reservationId;
@@ -34,111 +37,101 @@ class Reservation {
     public String getRoomType() {
         return roomType;
     }
-}
 
-/**
- * Represents an optional add-on service
- */
-class AddOnService {
-
-    private String serviceName;
-    private double cost;
-
-    public AddOnService(String serviceName, double cost) {
-        this.serviceName = serviceName;
-        this.cost = cost;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public double getCost() {
-        return cost;
+    public void display() {
+        System.out.println(
+                "Reservation ID: " + reservationId +
+                        ", Guest: " + guestName +
+                        ", Room Type: " + roomType
+        );
     }
 }
 
 /**
- * Manages add-on services attached to reservations
+ * BookingHistory stores confirmed bookings
  */
-class AddOnServiceManager {
+class BookingHistory {
 
-    private Map<String, List<AddOnService>> reservationServices;
+    private List<Reservation> history;
 
-    public AddOnServiceManager() {
-        reservationServices = new HashMap<>();
+    public BookingHistory() {
+        history = new ArrayList<>();
     }
 
-    public void addService(String reservationId, AddOnService service) {
+    public void addReservation(Reservation reservation) {
 
-        reservationServices.putIfAbsent(reservationId, new ArrayList<>());
+        history.add(reservation);
 
-        reservationServices.get(reservationId).add(service);
-
-        System.out.println("Service added: " + service.getServiceName());
+        System.out.println("Reservation added to booking history.");
     }
 
-    public double calculateTotalServiceCost(String reservationId) {
-
-        double total = 0;
-
-        List<AddOnService> services = reservationServices.get(reservationId);
-
-        if (services != null) {
-
-            for (AddOnService s : services) {
-                total += s.getCost();
-            }
-        }
-
-        return total;
-    }
-
-    public void displayServices(String reservationId) {
-
-        List<AddOnService> services = reservationServices.get(reservationId);
-
-        if (services == null || services.isEmpty()) {
-            System.out.println("No add-on services selected.");
-            return;
-        }
-
-        System.out.println("\nSelected Services:");
-
-        for (AddOnService s : services) {
-            System.out.println("- " + s.getServiceName() + " ($" + s.getCost() + ")");
-        }
+    public List<Reservation> getReservations() {
+        return history;
     }
 }
 
+/**
+ * BookingReportService generates reports
+ */
+class BookingReportService {
+
+    public void displayAllBookings(List<Reservation> reservations) {
+
+        System.out.println("\nBooking History:");
+
+        for (Reservation r : reservations) {
+            r.display();
+        }
+    }
+
+    public void generateSummaryReport(List<Reservation> reservations) {
+
+        Map<String, Integer> roomCount = new HashMap<>();
+
+        for (Reservation r : reservations) {
+
+            String type = r.getRoomType();
+
+            roomCount.put(type, roomCount.getOrDefault(type, 0) + 1);
+        }
+
+        System.out.println("\nBooking Summary Report:");
+
+        for (String type : roomCount.keySet()) {
+            System.out.println(type + " Rooms Booked: " + roomCount.get(type));
+        }
+
+        System.out.println("Total Reservations: " + reservations.size());
+    }
+}
+
+/**
+ * Main Application
+ */
 public class BookMyStay {
 
     public static void main(String[] args) {
 
-        System.out.println("Book My Stay App - Version 7.1");
-        System.out.println("Use Case 7: Add-On Service Selection\n");
+        System.out.println("Book My Stay App - Version 8.0");
+        System.out.println("Use Case 8: Booking History & Reporting\n");
 
-        // Example reservation (already confirmed in UC6)
-        Reservation reservation = new Reservation("RES101", "Alice", "Double");
+        BookingHistory history = new BookingHistory();
 
-        // Add-on service manager
-        AddOnServiceManager serviceManager = new AddOnServiceManager();
+        // Simulated confirmed reservations
+        Reservation r1 = new Reservation("RES101", "Alice", "Single");
+        Reservation r2 = new Reservation("RES102", "Bob", "Double");
+        Reservation r3 = new Reservation("RES103", "Charlie", "Suite");
 
-        // Available services
-        AddOnService breakfast = new AddOnService("Breakfast", 20);
-        AddOnService airportPickup = new AddOnService("Airport Pickup", 40);
-        AddOnService spa = new AddOnService("Spa Access", 60);
+        history.addReservation(r1);
+        history.addReservation(r2);
+        history.addReservation(r3);
 
-        // Guest selects services
-        serviceManager.addService(reservation.getReservationId(), breakfast);
-        serviceManager.addService(reservation.getReservationId(), spa);
+        BookingReportService reportService = new BookingReportService();
 
-        // Display selected services
-        serviceManager.displayServices(reservation.getReservationId());
+        // Admin views booking history
+        reportService.displayAllBookings(history.getReservations());
 
-        // Calculate additional cost
-        double totalCost = serviceManager.calculateTotalServiceCost(reservation.getReservationId());
-
-        System.out.println("\nTotal Add-On Cost: $" + totalCost);
+        // Admin generates summary report
+        reportService.generateSummaryReport(history.getReservations());
     }
 }
